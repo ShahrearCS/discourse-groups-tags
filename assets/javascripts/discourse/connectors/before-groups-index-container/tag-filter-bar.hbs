@@ -1,0 +1,20 @@
+{{! Renders tag filter buttons above the groups list }}
+{{! Only shows if at least one group has tags set }}
+
+{{#if this.hasAnyTags}}
+<div class="group-tag-filter-bar">
+    <span class="group-tag-filter-label">Filter by tag:</span>
+
+    <button class="btn btn-small {{if (eq this.activeTag null) 'btn-primary' 'btn-default'}}" {{on "click"
+        this.clearFilter}}>
+        All
+    </button>
+
+    {{#each this.allTags as |tag|}}
+    <button class="btn btn-small {{if (eq this.activeTag tag) 'btn-primary' 'btn-default'}}" {{on "click" (fn
+        this.filterByTag tag)}}>
+        {{tag}}
+    </button>
+    {{/each}}
+</div>
+{{/if}}

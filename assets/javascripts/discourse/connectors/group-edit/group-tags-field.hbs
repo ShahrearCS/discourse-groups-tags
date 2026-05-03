@@ -1,0 +1,15 @@
+{{! Adds a "Group Tags" text input to the group settings/edit page }}
+{{! Admins enter comma-separated tags e.g. "math, science, languages" }}
+
+<div class="control-group group-tags-field">
+  <label class="control-label" for="group-tags-input">
+    Group Tags
+  </label>
+  <div class="controls">
+    <input id="group-tags-input" type="text" value={{this.currentTags}} placeholder="e.g. math, science, languages"
+      class="input-xxlarge" {{on "input" this.onInput}} />
+    <div class="hint">
+      Comma-separated tags. Used to filter groups on the groups page.
+    </div>
+  </div>
+</div>

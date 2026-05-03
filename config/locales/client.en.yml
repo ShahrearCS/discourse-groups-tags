@@ -1,0 +1,7 @@
+en:
+  admin_js:
+    admin:
+      groups:
+        group_tags:
+          label: "Tags"
+      
