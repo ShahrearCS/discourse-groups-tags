@@ -12,29 +12,41 @@ after_initialize do
   ## 2. Whitelist it so it can be saved via the group update endpoint
   DiscoursePluginRegistry.register_editable_group_custom_field(:group_tags, self)
 
-  ## 3. Expose on the full group serializer (used on /g/groupname page)
-  ##    Returns tags as a clean array e.g. ["math", "science", "languages"]
-  add_to_serializer(:group, :group_tags) do
-    raw = object.custom_fields["group_tags"]
-    return [] if raw.blank?
-    raw.split(",").map(&:strip).reject(&:blank?)
+  ## 3. Expose on both serializers using reloadable_patch
+  ##    This ensures serializer classes are fully loaded before we patch them
+  reloadable_patch do
+
+    ## Full group serializer — used on /g/groupname page
+    GroupSerializer.class_eval do
+      attributes :group_tags
+
+      def group_tags
+        raw = object.custom_fields["group_tags"]
+        return [] if raw.blank?
+        raw.split(",").map(&:strip).reject(&:blank?)
+      end
+    end
+
+    ## Basic group serializer — used in group lists and search results
+    BasicGroupSerializer.class_eval do
+      attributes :group_tags
+
+      def group_tags
+        raw = object.custom_fields["group_tags"]
+        return [] if raw.blank?
+        raw.split(",").map(&:strip).reject(&:blank?)
+      end
+    end
+
   end
 
-  ## 4. Also expose on basic_group serializer (used in group lists and search)
-  add_to_serializer(:basic_group, :group_tags) do
-    raw = object.custom_fields["group_tags"]
-    return [] if raw.blank?
-    raw.split(",").map(&:strip).reject(&:blank?)
-  end
-
-  ## 5. Allow groups to be searched/filtered by tag via the groups API
+  ## 4. Allow groups to be filtered by tag via the groups API
   ##    GET /groups.json?filter_tag=math
   module ::GroupsControllerExtension
     def index
       if params[:filter_tag].present?
         tag = params[:filter_tag].strip.downcase
 
-        ## Find group IDs whose group_tags custom field contains the tag
         matching_ids = GroupCustomField
           .where(name: "group_tags")
           .select { |f| f.value.to_s.split(",").map(&:strip).map(&:downcase).include?(tag) }
