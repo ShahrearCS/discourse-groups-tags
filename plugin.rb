@@ -1,4 +1,4 @@
-# name: discourse-group-tag-field
+# name: discourse-groups-tags
 # about: Adds a comma-separated tags custom field to Discourse groups
 # version: 0.1
 # authors: you
