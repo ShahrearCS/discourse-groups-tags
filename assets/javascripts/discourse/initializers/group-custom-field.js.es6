@@ -1,24 +1,33 @@
 import { withPluginApi } from 'discourse/lib/plugin-api';
+import { ajax } from 'discourse/lib/ajax';
 
 export default {
   name: 'group-custom-field',
   initialize() {
-    withPluginApi('0.8.30', api => {
+
+    withPluginApi('0.8.30', (api) => {
+
+      // Log groups and their tags
+      ajax("/groups.json")
+        .then((result) => {
+          result.groups.forEach((group) => {
+            console.log(group.name, group.custom_fields?.group_tags);
+          });
+        })
+        .catch((err) => console.error("Failed to load groups", err));
+
+      // Patch group model to include custom_fields when saving
       api.modifyClass('model:group', {
-        // The custom_fields attribute is initialzed as an empty object on the
-        // group model so we can add to it in the template.
-        // i.e we're using custom_fields.group_tags in connectors/group-edit/field-container.hbs
         custom_fields: {},
-        
-        // STEP 2 //
-        // Here we're adding custom_fields to the json object that's
-        // that's sent to the server
+
         asJSON() {
           return Object.assign(this._super(), {
             custom_fields: this.custom_fields
           });
         }
-      })
-    })
+      });
+
+    });
+
   }
 }
